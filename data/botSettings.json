@@ -1,0 +1,10 @@
+{
+  "botMode": "self",
+  "autoViewMessage": true,
+  "autoViewStatus": true,
+  "autoReactStatus": false,
+  "autoReact": false,
+  "autoStatusEmoji": "❤️",
+  "autoTyping": false,
+  "autoRecording": false
+}

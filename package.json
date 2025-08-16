@@ -1,0 +1,42 @@
+{
+  "name": "whatsapp-bot",
+  "version": "1.0.0",
+  "description": "Simple WhatsApp Bot using Baileys",
+  "main": "bot.js",
+  "type": "module",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@google/generative-ai": "^0.24.1",
+    "@whiskeysockets/baileys": "^6.7.2",
+    "axios": "^1.9.0",
+    "canvacord": "^6.0.2",
+    "cheerio": "^1.0.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
+    "ffmpeg": "^0.0.4",
+    "ffmpeg-static": "^5.2.0",
+    "fluent-ffmpeg": "^2.1.3",
+    "form-data": "^4.0.4",
+    "fs": "^0.0.1-security",
+    "fs-extra": "^11.3.1",
+    "google-it": "^1.6.4",
+    "https": "^1.0.0",
+    "human-readable": "^0.2.1",
+    "jimp": "^0.16.13",
+    "moment-timezone": "^0.6.0",
+    "mumaker": "^2.0.0",
+    "node-webpmux": "^3.2.1",
+    "openai": "^4.100.0",
+    "pino": "^8.21.0",
+    "translatte": "^3.0.1",
+    "wa-sticker-formatter": "^4.4.4",
+    "whatsapp-bot": "file:",
+    "yt-search": "^2.13.1",
+    "ytdl-core": "^4.11.5",
+    "ytsr": "^3.8.4"
+  }
+}

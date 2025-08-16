@@ -1,0 +1,12 @@
+{
+  "120363299912897572@g.us": {
+    "enabled": true,
+    "welcomeMessage": "it's seems your going why so early we will not miss you",
+    "goodbyeMessage": "it's seems your going why so early we will not miss you"
+  },
+  "120363303245919343@g.us": {
+    "enabled": true,
+    "welcomeMessage": "Welcome @user to the group! 🎉",
+    "goodbyeMessage": "Goodbye @user! We will miss you! 😢"
+  }
+}
