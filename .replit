@@ -1,0 +1,21 @@
+modules = ["nodejs-20"]
+run = "npm run start"
+
+[nix]
+channel = "stable-25_05"
+packages = ["vercel-pkg"]
+
+[deployment]
+run = ["sh", "-c", "npm run start"]
+
+[workflows]
+runButton = "Start Bot"
+
+[[workflows.workflow]]
+name = "Start Bot"
+author = 46499522
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node bot.js"
