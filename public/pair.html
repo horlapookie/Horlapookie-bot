@@ -1,0 +1,292 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bot Pairing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: rgba(0, 0, 0, 0.15);
+            --bg-secondary: rgba(0, 0, 0, 0.1);
+            --text-primary: #fff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --highlight: #4CAF50;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', 'Lucida Console', monospace;
+            background: url('https://files.catbox.moe/i4bbnf.png') center/cover fixed;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--bg-primary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid var(--border-color);
+            border-radius: 0px;
+            padding: 40px;
+            box-shadow: 0 20px 40px var(--shadow);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--highlight);
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 0px;
+            font-size: 16px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--highlight);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 0px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-family: inherit;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 0px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            display: none;
+        }
+
+        .result-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .waiting-message {
+            color: var(--highlight);
+            font-weight: bold;
+            display: none;
+        }
+
+        .battery-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            padding: 10px;
+            border-radius: 0px;
+            border: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 WhatsApp Bot Pairing</h1>
+            <p>Generate your session ID for WhatsApp bot deployment</p>
+        </div>
+
+        <form id="pairForm">
+            <div class="form-group">
+                <label for="number">WhatsApp Number (with country code):</label>
+                <input type="text" id="number" placeholder="e.g., +1234567890" required>
+            </div>
+
+            <button type="submit" id="submit" class="submit-btn">
+                🔗 Generate Pairing Code
+            </button>
+        </form>
+
+        <div class="result-box">
+            <div id="waiting-message" class="waiting-message">
+                ⏳ Generating pairing code... Please wait
+            </div>
+            <div id="pair-result"></div>
+        </div>
+
+        <button id="copy-code" class="copy-btn" onclick="copyCode()">
+            📋 COPY CODE
+        </button>
+
+        <div class="battery-info">
+            <i id="battery-icon" class="fas fa-battery-full"></i>
+            <span id="battery-level">100%</span>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const pairResult = document.getElementById("pair-result");
+        const submitBtn = document.getElementById("submit");
+        const numberInput = document.getElementById("number");
+        const copyCodeBtn = document.getElementById("copy-code");
+        const waitingMessage = document.getElementById("waiting-message");
+        const batteryLevel = document.getElementById("battery-level");
+        const batteryIcon = document.getElementById("battery-icon");
+
+        // Copy code function
+        async function copyCode() {
+            const code = pairResult.innerText.replace('CODE: ', '');
+            try {
+                await navigator.clipboard.writeText(code);
+                copyCodeBtn.innerText = "COPIED!";
+                copyCodeBtn.style.backgroundColor = "#00ff00";
+                copyCodeBtn.style.color = "#000";
+                setTimeout(() => {
+                    copyCodeBtn.innerText = "📋 COPY CODE";
+                    copyCodeBtn.style.backgroundColor = "";
+                    copyCodeBtn.style.color = "";
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+            }
+        }
+
+        // Submit handler
+        document.getElementById('pairForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!numberInput.value) {
+                pairResult.innerHTML = '<p style="color:var(--highlight)">Enter your WhatsApp number with country code</p>';
+                return;
+            }
+
+            const cleanNumber = numberInput.value.replace(/[^0-9]/g, "");
+
+            if (cleanNumber.length < 10) {
+                pairResult.innerHTML = '<p style="color:#ff5555">Invalid Number - Must be at least 10 digits</p>';
+                return;
+            }
+
+            waitingMessage.style.display = "block";
+            pairResult.innerHTML = "";
+            copyCodeBtn.style.display = "none";
+            submitBtn.disabled = true;
+            submitBtn.textContent = "⏳ Generating...";
+
+            try {
+                const response = await axios.get(`/api/pair?number=${cleanNumber}`);
+                const code = response.data.code || "Service Unavailable";
+
+                pairResult.innerHTML = `
+                    <p style="color:var(--highlight); font-weight:bold; font-size:1.2rem;">
+                        CODE: <span style="color:white; font-family: monospace;">${code}</span>
+                    </p>
+                `;
+                copyCodeBtn.style.display = "inline-block";
+                waitingMessage.style.display = "none";
+            } catch (error) {
+                pairResult.innerHTML = '<p style="color:#ff5555">Error getting pairing code. Try again.</p>';
+                waitingMessage.style.display = "none";
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = "🔗 Generate Pairing Code";
+        });
+
+        // Battery indicator
+        async function updateBattery() {
+            if (navigator.getBattery) {
+                try {
+                    const battery = await navigator.getBattery();
+                    const updateBatteryUI = () => {
+                        const batteryPercent = Math.round(battery.level * 100);
+                        batteryLevel.textContent = `${batteryPercent}%`;
+
+                        if (battery.charging) {
+                            batteryIcon.className = 'fas fa-bolt';
+                            batteryIcon.style.color = '#00ff00';
+                        } else {
+                            batteryIcon.className = 'fas fa-battery-full';
+                            batteryIcon.style.color = 'var(--highlight)';
+                        }
+                    };
+
+                    battery.addEventListener('levelchange', updateBatteryUI);
+                    battery.addEventListener('chargingchange', updateBatteryUI);
+                    updateBatteryUI();
+                } catch (error) {
+                    console.error('Battery API error:', error);
+                }
+            }
+        }
+
+        window.addEventListener('load', () => {
+            updateBattery();
+        });
+    </script>
+</body>
+</html>

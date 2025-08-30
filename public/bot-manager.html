@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Manager - WhatsApp Bot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: rgba(255, 255, 255, 0.1);
+            --bg-secondary: rgba(255, 255, 255, 0.15);
+            --text-primary: #fff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --highlight: #4CAF50;
+            --shadow: rgba(0,0,0,0.2);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: rgba(0, 0, 0, 0.1);
+            --bg-secondary: rgba(0, 0, 0, 0.15);
+            --text-primary: #fff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --highlight: #66bb6a;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('https://files.catbox.moe/i4bbnf.png') center/cover fixed;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                background-attachment: scroll;
+                background-size: cover;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .header h1 {
+            color: var(--highlight);
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .bot-card {
+            background: var(--bg-secondary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        .status.online { background: #4CAF50; color: white; }
+        .status.starting { background: #FF9800; color: white; }
+        .status.stopped { background: #f44336; color: white; }
+        .status.error { background: #9C27B0; color: white; }
+
+        .bot-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .info-item {
+            background: var(--bg-primary);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--highlight);
+        }
+
+        .info-item h3 {
+            color: var(--highlight);
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .info-item p {
+            color: var(--text-primary);
+        }
+
+        .info-item p {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-restart { background: #FF9800; color: white; }
+        .btn-stop { background: #f44336; color: white; }
+        .btn-back { background: #2196F3; color: white; }
+
+        .logs {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f44336;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        .menu-separator {
+            color: var(--text-primary);
+            font-weight: bold;
+            margin: 20px 0;
+            display: block; /* Ensure it's a block element */
+            white-space: nowrap; /* Prevent wrapping */
+            overflow: hidden; /* Hide overflow */
+            text-overflow: clip; /* Clip text */
+            position: relative; /* For pseudo-elements */
+        }
+
+        .menu-separator::before,
+        .menu-separator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 50%; /* Changed from calc(50% - 100px) to just 50% */
+            height: 1px;
+            background: var(--border-color);
+            transform: translateY(-50%);
+        }
+
+        .menu-separator::before {
+            left: 0;
+        }
+
+        .menu-separator::after {
+            right: 0;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Bot Manager</h1>
+            <p>Monitor and control your WhatsApp bot instance</p>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading bot information...</p>
+        </div>
+
+        <div id="error" class="error-message" style="display: none;">
+            <p id="error-message">An error occurred while loading bot data.</p>
+        </div>
+
+        <div id="bot-container" style="display: none;">
+            <!-- Bot information will be loaded here -->
+        </div>
+
+        <!-- Background Audio -->
+        <audio id="backgroundAudio" loop>
+            <source src="https://files.catbox.moe/0nppj7.mp3" type="audio/mpeg">
+        </audio>
+
+        <!-- Control Panel -->
+        <div style="position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px;">
+            <!-- Battery Indicator -->
+            <div style="background: var(--bg-secondary); padding: 10px; border-radius: 10px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-primary);">
+                <i id="batteryIcon" class="fas fa-battery-full" style="color: var(--highlight);"></i>
+                <span id="batteryLevel">100%</span>
+            </div>
+
+            <!-- Theme Toggle -->
+            <button id="themeToggle" class="btn" style="width: 50px; height: 50px; border-radius: 50%; padding: 0; background: var(--bg-secondary); color: var(--text-primary);">
+                🌙
+            </button>
+
+            <!-- Audio Toggle -->
+            <button id="audioToggle" class="btn" style="background: var(--highlight); color: white; border-radius: 50%; width: 50px; height: 50px;">
+                🔊
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const botId = window.location.pathname.split('/').pop();
+        let statusInterval;
+
+        async function loadBotStatus() {
+            try {
+                const response = await fetch(`/api/bot/${botId}/status`);
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Bot not found. It may have been stopped or removed.');
+                    }
+                    throw new Error(`Error loading bot status: ${response.status}`);
+                }
+
+                const botData = await response.json();
+                console.log('Bot data loaded:', botData);
+                displayBotInfo(botData);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('bot-container').style.display = 'block';
+                document.getElementById('error').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading bot status:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error-message').textContent = error.message;
+            }
+        }
+
+        let currentOwnerNumber = '';
+
+        function displayBotInfo(botData) {
+            const container = document.getElementById('bot-container');
+
+            // Store owner number for terminal access
+            currentOwnerNumber = botData.config.ownerNumber;
+
+            container.innerHTML = `
+                <div class="bot-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>Bot Instance: ${botData.id}</h2>
+                        <span class="status ${botData.status}">${botData.status}</span>
+                    </div>
+
+                    <div class="bot-info">
+                        <div class="info-item">
+                            <h3>Bot Name</h3>
+                            <p>${botData.config.botName || 'WhatsApp Bot'}</p>
+                        </div>
+                        <div class="info-item">
+                            <h3>Owner Number</h3>
+                            <p>${botData.config.ownerNumber}</p>
+                        </div>
+                        <div class="info-item">
+                            <h3>Command Prefix</h3>
+                            <p>${botData.config.prefix}</p>
+                        </div>
+                        <div class="info-item">
+                            <h3>Uptime</h3>
+                            <p>${botData.uptime}</p>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn btn-restart" onclick="restartBot()">🔄 Restart Bot</button>
+                        <button class="btn btn-stop" onclick="stopBot()">🛑 Stop Bot</button>
+                        <button class="btn" onclick="openTerminal()" style="background: #2196F3; color: white;">🖥️ Open Terminal</button>
+                        <button class="btn" onclick="openMenu()" style="background: #FFC107; color: black;">📋 Command Menu</button>
+                        <a href="/" class="btn btn-back">← Back to Deploy</a>
+                    </div>
+
+                    <div class="logs" id="logs">
+                        <p>[INFO] Bot management interface loaded</p>
+                        <p>[INFO] Status: ${botData.status.toUpperCase()}</p>
+                        <p>[INFO] Uptime: ${botData.uptime}</p>
+                        <p>[INFO] Use the buttons above to control your bot</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function restartBot() {
+            try {
+                addLog('[INFO] Restarting bot...');
+                const response = await fetch(`/api/bot/${botId}/restart`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    addLog('[SUCCESS] Bot restart initiated');
+                    setTimeout(loadBotStatus, 2000);
+                } else {
+                    addLog('[ERROR] Failed to restart bot');
+                }
+            } catch (error) {
+                addLog(`[ERROR] ${error.message}`);
+            }
+        }
+
+        async function stopBot() {
+            try {
+                addLog('[INFO] Stopping bot...');
+                const response = await fetch(`/api/bot/${botId}/stop`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    addLog('[SUCCESS] Bot stopped');
+                    setTimeout(loadBotStatus, 1000);
+                } else {
+                    addLog('[ERROR] Failed to stop bot');
+                }
+            } catch (error) {
+                addLog(`[ERROR] ${error.message}`);
+            }
+        }
+
+        function addLog(message) {
+            const logs = document.getElementById('logs');
+            if (logs) {
+                const timestamp = new Date().toLocaleTimeString();
+                logs.innerHTML += `<p>[${timestamp}] ${message}</p>`;
+                logs.scrollTop = logs.scrollHeight;
+            }
+        }
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+
+        if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeToggle.textContent = '☀️';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const theme = document.documentElement.getAttribute('data-theme');
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeToggle.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Battery indicator functionality
+        const batteryIcon = document.getElementById('batteryIcon');
+        const batteryLevel = document.getElementById('batteryLevel');
+
+        async function updateBattery() {
+            if (navigator.getBattery) {
+                try {
+                    const battery = await navigator.getBattery();
+
+                    const updateBatteryUI = () => {
+                        const batteryPercent = Math.round(battery.level * 100);
+                        batteryLevel.textContent = `${batteryPercent}%`;
+
+                        // Update battery icon based on level
+                        let iconClass = 'fa-battery-empty';
+                        if (batteryPercent > 80) iconClass = 'fa-battery-full';
+                        else if (batteryPercent > 60) iconClass = 'fa-battery-three-quarters';
+                        else if (batteryPercent > 40) iconClass = 'fa-battery-half';
+                        else if (batteryPercent > 20) iconClass = 'fa-battery-quarter';
+
+                        // Add charging bolt if charging
+                        if (battery.charging) {
+                            batteryIcon.className = `fas fa-bolt`;
+                            batteryIcon.style.color = '#00ff00';
+                        } else {
+                            batteryIcon.className = `fas ${iconClass}`;
+                            batteryIcon.style.color = 'var(--highlight)';
+                        }
+                    };
+
+                    battery.addEventListener('levelchange', updateBatteryUI);
+                    battery.addEventListener('chargingchange', updateBatteryUI);
+                    updateBatteryUI();
+                } catch (error) {
+                    console.error('Battery API error:', error);
+                }
+            } else {
+                batteryLevel.textContent = "N/A";
+            }
+        }
+
+        updateBattery();
+
+        // Audio controls
+        const audioToggle = document.getElementById('audioToggle');
+        const backgroundAudio = document.getElementById('backgroundAudio');
+        let isPlaying = false;
+
+        audioToggle.addEventListener('click', () => {
+            if (isPlaying) {
+                backgroundAudio.pause();
+                audioToggle.textContent = '🔊';
+                isPlaying = false;
+            } else {
+                backgroundAudio.play().catch(e => console.log('Audio play failed:', e));
+                audioToggle.textContent = '🔇';
+                isPlaying = true;
+            }
+        });
+
+        // Helper function to get bot ID from URL
+        function getBotIdFromUrl() {
+            const urlParts = window.location.pathname.split('/');
+            return urlParts[urlParts.length - 1];
+        }
+
+        // Open terminal function
+        function openTerminal() {
+            const botId = getBotIdFromUrl();
+            if (botId) {
+                window.open(`/terminal?botId=${botId}&phone=${encodeURIComponent(currentOwnerNumber)}`, '_blank');
+            }
+        }
+
+        // Open menu function
+        function openMenu() {
+            const botId = getBotIdFromUrl();
+            if (botId) {
+                window.open(`/menu?botId=${botId}`, '_blank');
+            }
+        }
+
+        // Load bot status on page load
+        loadBotStatus();
+
+        // Auto-refresh status every 5 seconds for better responsiveness
+        statusInterval = setInterval(loadBotStatus, 5000);
+
+        // Clear interval when page unloads
+        window.addEventListener('beforeunload', () => {
+            if (statusInterval) {
+                clearInterval(statusInterval);
+            }
+        });
+    </script>
+</body>
+</html>

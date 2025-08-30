@@ -1,0 +1,30 @@
+{
+  "2349122222622": {
+    "word": "nigeria",
+    "guessed": [
+      "a",
+      "e",
+      "u"
+    ],
+    "wrongGuesses": 1,
+    "wins": 0,
+    "losses": 2,
+    "revealed": [
+      "_",
+      "_",
+      "_",
+      "e",
+      "_",
+      "_",
+      "a"
+    ]
+  },
+  "919233927901": {
+    "word": "",
+    "guessed": [],
+    "wrongGuesses": 0,
+    "wins": 0,
+    "losses": 1,
+    "revealed": []
+  }
+}

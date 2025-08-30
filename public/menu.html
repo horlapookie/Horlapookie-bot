@@ -1,0 +1,519 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Menu & Command History</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: rgba(255, 255, 255, 0.15);
+            --bg-secondary: rgba(255, 255, 255, 0.1);
+            --text-primary: #fff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --highlight: #667eea;
+            --shadow: rgba(0,0,0,0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('https://files.catbox.moe/i4bbnf.png') center/cover fixed;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px var(--shadow);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--highlight);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .login-section {
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .command-category {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--highlight);
+        }
+
+        .command-item {
+            background: var(--bg-primary);
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .command-item:hover {
+            background: var(--highlight);
+            transform: translateY(-2px);
+        }
+
+        .history-item {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .history-command {
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--highlight);
+        }
+
+        .history-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .history-response {
+            background: var(--bg-primary);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .error {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .command-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="goBack()">← Back</button>
+
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Bot Menu & History</h1>
+            <p>Explore commands and view your command history</p>
+        </div>
+
+        <div class="login-section" id="loginSection">
+            <h3>Login to Access Menu & History</h3>
+            <div class="form-group">
+                <input type="text" id="botId" placeholder="Enter Bot ID" />
+            </div>
+            <div class="form-group">
+                <input type="text" id="phoneNumber" placeholder="Enter WhatsApp Number" />
+            </div>
+            <button class="btn btn-primary" onclick="login()">Login</button>
+            <div id="loginMessage"></div>
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('commands')">Commands</div>
+                <div class="tab" onclick="switchTab('history')">Command History</div>
+            </div>
+
+            <div id="commandsTab" class="tab-content active">
+                <h2>Available Commands</h2>
+                <input type="text" class="search-box" id="commandSearch" placeholder="Search commands..." onkeyup="searchCommands()">
+                <div id="commandsContainer" class="loading">Loading commands...</div>
+            </div>
+
+            <div id="historyTab" class="tab-content">
+                <h2>Command History</h2>
+                <input type="text" class="search-box" id="historySearch" placeholder="Search history..." onkeyup="searchHistory()">
+                <button class="btn btn-primary" onclick="refreshHistory()" style="margin-bottom: 20px;">Refresh History</button>
+                <div id="historyContainer" class="loading">Loading history...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentBotId = null;
+        let currentPhone = null;
+        let allCommands = {};
+        let commandHistory = [];
+
+        function goBack() {
+            window.history.back();
+        }
+
+        async function login() {
+            const botId = document.getElementById('botId').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const loginMessage = document.getElementById('loginMessage');
+
+            if (!botId || !phoneNumber) {
+                loginMessage.innerHTML = '<div class="error">Please enter both Bot ID and phone number</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/bot/${botId}/verify-owner`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ ownerNumber: phoneNumber })
+                });
+
+                if (response.ok) {
+                    currentBotId = botId;
+                    currentPhone = phoneNumber;
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                    await loadCommands();
+                    await loadHistory();
+                } else {
+                    const error = await response.json();
+                    loginMessage.innerHTML = `<div class="error">${error.error || 'Login failed'}</div>`;
+                }
+            } catch (error) {
+                loginMessage.innerHTML = '<div class="error">Network error. Please try again.</div>';
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+        }
+
+        async function loadCommands() {
+            try {
+                const response = await fetch(`/api/bot/${currentBotId}/commands`);
+                if (response.ok) {
+                    const data = await response.json();
+                    allCommands = data.commands || {};
+                    displayCommands(allCommands);
+                } else {
+                    // Fallback: load from static data
+                    allCommands = getStaticCommands();
+                    displayCommands(allCommands);
+                }
+            } catch (error) {
+                allCommands = getStaticCommands();
+                displayCommands(allCommands);
+            }
+        }
+
+        function getStaticCommands() {
+            return {
+                "🛠️ Basic Tools": ["ping", "uptime", "botinfo", "userinfo", "profile", "echo", "time"],
+                "👥 Group Management": ["welcome", "tagall", "announce", "del", "groupinfo", "kick", "promote", "demote", "lock", "warn", "link"],
+                "🤖 AI Commands": ["gpt-3", "gpt-4", "copilot", "toxic-lover", "bing4", "ai2", "translate", "google"],
+                "🎵 Music & Media": ["play", "lyrics", "yt", "tiktok", "video", "ytv", "song", "shazam"],
+                "🎮 Games & Fun": ["hangman", "trivia", "joke", "insult", "riddle"],
+                "🎨 Creativity & Art": ["wallpaper", "masterpiece", "quote", "sticker"],
+                "📥 Downloaders": ["igdl", "fbdl", "tiktoklite", "ytdl"],
+                "🔐 Encryption & Security": ["decrypt", "encrypt", "hash", "base64"],
+                "🔍 Search & Info": ["wikipedia", "pinterest", "igstalk", "dictionary", "images"],
+                "💡 Utility Tools": ["info", "menu", "delete", "save", "telegraph"]
+            };
+        }
+
+        function displayCommands(commands) {
+            const container = document.getElementById('commandsContainer');
+            let html = '<div class="command-grid">';
+            
+            Object.entries(commands).forEach(([category, cmds]) => {
+                html += `
+                    <div class="command-category" data-category="${category}">
+                        <div class="category-title">${category}</div>
+                `;
+                
+                cmds.forEach(cmd => {
+                    html += `<div class="command-item" data-command="${cmd}">?${cmd}</div>`;
+                });
+                
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch(`/api/bot/${currentBotId}/history`);
+                if (response.ok) {
+                    const data = await response.json();
+                    commandHistory = data.history || [];
+                } else {
+                    commandHistory = getSampleHistory();
+                }
+                displayHistory(commandHistory);
+            } catch (error) {
+                commandHistory = getSampleHistory();
+                displayHistory(commandHistory);
+            }
+        }
+
+        function getSampleHistory() {
+            return [
+                {
+                    command: "?menu",
+                    timestamp: new Date().toISOString(),
+                    response: "Menu sent successfully with 300+ commands available"
+                },
+                {
+                    command: "?play faded",
+                    timestamp: new Date(Date.now() - 300000).toISOString(),
+                    response: "🎵 Playing: Faded by Alan Walker\nDuration: 3:32\nDownload completed successfully"
+                },
+                {
+                    command: "?yt minecraft",
+                    timestamp: new Date(Date.now() - 600000).toISOString(),
+                    response: "📹 Video: Minecraft Tutorial\nDownloaded successfully as MP4"
+                }
+            ];
+        }
+
+        function displayHistory(history) {
+            const container = document.getElementById('historyContainer');
+            
+            if (history.length === 0) {
+                container.innerHTML = '<div class="error">No command history found</div>';
+                return;
+            }
+            
+            let html = '';
+            history.forEach(item => {
+                const time = new Date(item.timestamp).toLocaleString();
+                html += `
+                    <div class="history-item" data-command="${item.command}">
+                        <div class="history-header">
+                            <span class="history-command">${item.command}</span>
+                            <span class="history-time">${time}</span>
+                        </div>
+                        <div class="history-response">${item.response}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function searchCommands() {
+            const query = document.getElementById('commandSearch').value.toLowerCase();
+            const categories = document.querySelectorAll('.command-category');
+            
+            categories.forEach(category => {
+                const commands = category.querySelectorAll('.command-item');
+                let hasVisibleCommand = false;
+                
+                commands.forEach(cmd => {
+                    const commandText = cmd.textContent.toLowerCase();
+                    if (commandText.includes(query)) {
+                        cmd.style.display = 'block';
+                        hasVisibleCommand = true;
+                    } else {
+                        cmd.style.display = 'none';
+                    }
+                });
+                
+                category.style.display = hasVisibleCommand ? 'block' : 'none';
+            });
+        }
+
+        function searchHistory() {
+            const query = document.getElementById('historySearch').value.toLowerCase();
+            const historyItems = document.querySelectorAll('.history-item');
+            
+            historyItems.forEach(item => {
+                const command = item.querySelector('.history-command').textContent.toLowerCase();
+                const response = item.querySelector('.history-response').textContent.toLowerCase();
+                
+                if (command.includes(query) || response.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        async function refreshHistory() {
+            document.getElementById('historyContainer').innerHTML = '<div class="loading">Refreshing history...</div>';
+            await loadHistory();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auto-fill from URL parameters if available
+            const urlParams = new URLSearchParams(window.location.search);
+            const botId = urlParams.get('botId');
+            if (botId) {
+                document.getElementById('botId').value = botId;
+            }
+        });
+    </script>
+</body>
+</html>

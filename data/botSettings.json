@@ -1,0 +1,17 @@
+{
+  "botMode": "self",
+  "autoViewMessage": false,
+  "autoViewStatus": false,
+  "autoReactStatus": false,
+  "autoReact": false,
+  "autoStatusEmoji": "❤️",
+  "autoTyping": false,
+  "autoRecording": false,
+  "antiLinkWarn": {},
+  "antiLinkKick": {},
+  "antiDeleteMessages": true,
+  "antiVoiceCall": false,
+  "antiVideoCall": false,
+  "antiBadWord": {},
+  "linkDetector": "allLinks"
+}

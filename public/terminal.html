@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Terminal - Real-time Logs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: rgba(0, 0, 0, 0.15);
+            --bg-secondary: rgba(0, 0, 0, 0.1);
+            --text-primary: #fff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --highlight: #4CAF50;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: rgba(0, 0, 0, 0.25);
+            --bg-secondary: rgba(0, 0, 0, 0.2);
+            --text-primary: #fff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --highlight: #66bb6a;
+            --shadow: rgba(0,0,0,0.4);
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', 'Lucida Console', monospace;
+            background: url('https://files.catbox.moe/i4bbnf.png') center/cover fixed;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 10px;
+            gap: 15px;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+
+        .header h1 {
+            color: var(--highlight);
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .login-section {
+            background: var(--bg-primary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 20px var(--shadow);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--highlight);
+        }
+
+        .connect-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-family: inherit;
+        }
+
+        .connect-btn:hover {
+            background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+        }
+
+        .connect-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .terminal-container {
+            flex: 1;
+            display: none;
+            background: var(--bg-primary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 0px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px var(--shadow);
+            max-height: 85vh;
+            border: 2px solid var(--highlight);
+        }
+
+        .terminal-header {
+            background: var(--bg-secondary);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-title {
+            color: var(--highlight);
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .terminal-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 5px 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .control-btn:hover {
+            background: var(--highlight);
+        }
+
+        .terminal-output {
+            height: calc(100% - 60px);
+            overflow-y: auto;
+            padding: 20px;
+            font-family: 'Consolas', 'Monaco', 'Lucida Console', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            background: rgba(0, 0, 0, 0.3);
+            color: #00ff00;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .terminal-output::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal-output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .terminal-output::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .log-line {
+            margin-bottom: 2px;
+            padding: 2px 0;
+        }
+
+        .log-stdout {
+            color: #00ff00;
+        }
+
+        .log-stderr {
+            color: #ff4444;
+        }
+
+        .log-timestamp {
+            color: #888;
+            font-size: 11px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected {
+            background: #4CAF50;
+        }
+
+        .status-disconnected {
+            background: #f44336;
+        }
+
+        .error-message {
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #ff4444;
+            margin-top: 10px;
+        }
+
+        .success-message {
+            color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #4CAF50;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .terminal-output {
+                font-size: 11px;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖥️ Bot Terminal Monitor</h1>
+            <p>Real-time console logs and monitoring</p>
+        </div>
+
+        <div class="login-section" id="loginSection">
+            <h3>Connect to Bot Terminal</h3>
+            <div class="form-group">
+                <label for="phoneNumber">Your WhatsApp Number:</label>
+                <input type="text" id="phoneNumber" placeholder="e.g., 1234567890" />
+            </div>
+            <div class="form-group">
+                <label for="botId">Bot ID:</label>
+                <input type="text" id="botId" placeholder="e.g., BOT-abc123-xyz789" />
+            </div>
+            <button class="connect-btn" id="connectBtn" onclick="connectToTerminal()">Connect to Terminal</button>
+            <div id="loginMessage"></div>
+        </div>
+
+        <div class="terminal-container" id="terminalContainer">
+            <div class="terminal-header">
+                <div class="terminal-title">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    <span id="terminalTitle">Bot Terminal</span>
+                </div>
+                <div class="terminal-controls">
+                    <button class="control-btn" onclick="clearTerminal()">Clear</button>
+                    <button class="control-btn" onclick="scrollToBottom()">Bottom</button>
+                    <button class="control-btn" onclick="disconnect()">Disconnect</button>
+                </div>
+            </div>
+            <div class="terminal-output" id="terminalOutput"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        let socket = null;
+        let isConnected = false;
+
+        function connectToTerminal() {
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const botId = document.getElementById('botId').value.trim();
+            const connectBtn = document.getElementById('connectBtn');
+            const loginMessage = document.getElementById('loginMessage');
+
+            if (!phoneNumber || !botId) {
+                showMessage('Please enter both phone number and Bot ID', 'error');
+                return;
+            }
+
+            connectBtn.disabled = true;
+            connectBtn.textContent = 'Connecting...';
+            loginMessage.innerHTML = '';
+
+            // Initialize Socket.IO connection
+            socket = io();
+
+            socket.on('connect', () => {
+                console.log('Connected to server');
+                // Authenticate with the terminal
+                socket.emit('authenticate-terminal', {
+                    botId: botId,
+                    phoneNumber: phoneNumber
+                });
+            });
+
+            socket.on('terminal-authenticated', (data) => {
+                if (data.success) {
+                    isConnected = true;
+                    showTerminal(data.botName || 'Bot Terminal');
+                    showMessage('Successfully connected to terminal!', 'success');
+                    updateConnectionStatus(true);
+                } else {
+                    showMessage(data.error || 'Authentication failed', 'error');
+                    connectBtn.disabled = false;
+                    connectBtn.textContent = 'Connect to Terminal';
+                }
+            });
+
+            socket.on('terminal-output', (data) => {
+                addLogLine(data);
+            });
+
+            socket.on('disconnect', () => {
+                isConnected = false;
+                updateConnectionStatus(false);
+                addLogLine({
+                    type: 'system',
+                    message: 'Disconnected from server',
+                    timestamp: new Date().toISOString()
+                });
+            });
+
+            socket.on('connect_error', (error) => {
+                showMessage('Failed to connect to server: ' + error.message, 'error');
+                connectBtn.disabled = false;
+                connectBtn.textContent = 'Connect to Terminal';
+            });
+        }
+
+        function showTerminal(botName) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('terminalContainer').style.display = 'flex';
+            document.getElementById('terminalTitle').textContent = botName + ' Terminal';
+            
+            // Welcome message
+            addLogLine({
+                type: 'system',
+                message: `Connected to ${botName} terminal. Real-time logs will appear below.`,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        function addLogLine(data) {
+            const output = document.getElementById('terminalOutput');
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            
+            const timestamp = new Date(data.timestamp).toLocaleTimeString();
+            const timestampSpan = `<span class="log-timestamp">[${timestamp}]</span> `;
+            
+            let logClass = '';
+            switch(data.type) {
+                case 'stdout':
+                    logClass = 'log-stdout';
+                    break;
+                case 'stderr':
+                    logClass = 'log-stderr';
+                    break;
+                case 'system':
+                    logClass = 'log-stdout';
+                    break;
+                default:
+                    logClass = 'log-stdout';
+            }
+            
+            line.innerHTML = timestampSpan + `<span class="${logClass}">${escapeHtml(data.message)}</span>`;
+            output.appendChild(line);
+            
+            // Auto-scroll to bottom
+            output.scrollTop = output.scrollHeight;
+            
+            // Limit lines to prevent memory issues
+            const lines = output.children;
+            if (lines.length > 1000) {
+                lines[0].remove();
+            }
+        }
+
+        function clearTerminal() {
+            document.getElementById('terminalOutput').innerHTML = '';
+        }
+
+        function scrollToBottom() {
+            const output = document.getElementById('terminalOutput');
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+            }
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('terminalContainer').style.display = 'none';
+            document.getElementById('connectBtn').disabled = false;
+            document.getElementById('connectBtn').textContent = 'Connect to Terminal';
+            document.getElementById('loginMessage').innerHTML = '';
+            isConnected = false;
+        }
+
+        function updateConnectionStatus(connected) {
+            const indicator = document.getElementById('statusIndicator');
+            if (connected) {
+                indicator.className = 'status-indicator status-connected';
+            } else {
+                indicator.className = 'status-indicator status-disconnected';
+            }
+        }
+
+        function showMessage(message, type) {
+            const loginMessage = document.getElementById('loginMessage');
+            loginMessage.innerHTML = `<div class="${type}-message">${message}</div>`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            if (socket) {
+                socket.disconnect();
+            }
+        });
+
+        // Auto-fill from URL parameters
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const botId = urlParams.get('botId');
+            const phoneNumber = urlParams.get('phone');
+            
+            if (botId) {
+                document.getElementById('botId').value = botId;
+            }
+            if (phoneNumber) {
+                document.getElementById('phoneNumber').value = phoneNumber;
+            }
+        });
+    </script>
+</body>
+</html>

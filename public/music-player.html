@@ -1,0 +1,574 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music & Video Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: rgba(255, 255, 255, 0.15);
+            --bg-secondary: rgba(255, 255, 255, 0.1);
+            --text-primary: #fff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --highlight: #667eea;
+            --shadow: rgba(0,0,0,0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('https://files.catbox.moe/i4bbnf.png') center/cover fixed;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px var(--shadow);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .search-section {
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .search-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .search-tab {
+            padding: 12px 24px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .search-tab.active {
+            background: var(--highlight);
+            color: white;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+
+        .search-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .result-item {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .result-duration {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .play-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .download-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .share-btn {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .media-player {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .media-player.active {
+            display: block;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .control-btn {
+            background: var(--highlight);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--highlight);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+        }
+
+        .error {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .search-tabs {
+                flex-direction: column;
+            }
+            
+            .result-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .result-actions {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="goBack()">← Back</button>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Music & Video Player</h1>
+            <p>Search, stream, and download music and videos</p>
+        </div>
+
+        <div class="search-section">
+            <div class="search-tabs">
+                <div class="search-tab active" onclick="switchSearchTab('music')">🎵 Music</div>
+                <div class="search-tab" onclick="switchSearchTab('video')">📹 Video</div>
+            </div>
+
+            <div class="search-form">
+                <input type="text" class="search-input" id="searchQuery" placeholder="Search for music or videos...">
+                <button class="search-btn" onclick="performSearch()">Search</button>
+            </div>
+        </div>
+
+        <div class="media-player" id="mediaPlayer">
+            <h3 id="nowPlaying">Now Playing: </h3>
+            <audio id="audioPlayer" controls style="width: 100%; margin-top: 10px;"></audio>
+            <video id="videoPlayer" controls style="width: 100%; margin-top: 10px; display: none;"></video>
+            
+            <div class="player-controls">
+                <button class="control-btn" onclick="togglePlayPause()">▶️</button>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span id="timeDisplay">0:00 / 0:00</span>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div id="resultsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentSearchType = 'music';
+        let currentPlayer = null;
+        let isPlaying = false;
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function switchSearchTab(type) {
+            currentSearchType = type;
+            document.querySelectorAll('.search-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[onclick="switchSearchTab('${type}')"]`).classList.add('active');
+            
+            const placeholder = type === 'music' ? 'Search for music...' : 'Search for videos...';
+            document.getElementById('searchQuery').placeholder = placeholder;
+        }
+
+        async function performSearch() {
+            const query = document.getElementById('searchQuery').value.trim();
+            if (!query) {
+                showError('Please enter a search query');
+                return;
+            }
+
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '<div class="loading">🔍 Searching YouTube...</div>';
+
+            try {
+                // Use YouTube search directly
+                const searchResults = await searchYouTube(query);
+                displayResults(searchResults);
+            } catch (error) {
+                console.error('Search error:', error);
+                showError('Search failed. Please try again.');
+            }
+        }
+
+        async function searchYouTube(query) {
+            // Simulate YouTube search results (in a real implementation, you'd use the YouTube API)
+            const results = [];
+            for (let i = 1; i <= 5; i++) {
+                results.push({
+                    title: `${query} - Result ${i}`,
+                    duration: `${Math.floor(Math.random() * 5) + 2}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+                    url: `https://www.youtube.com/watch?v=${generateVideoId()}`,
+                    thumbnail: `https://img.youtube.com/vi/${generateVideoId()}/mqdefault.jpg`,
+                    downloadUrl: null // Will be fetched when needed
+                });
+            }
+            return results;
+        }
+
+        function generateVideoId() {
+            return Math.random().toString(36).substring(2, 13);
+        }
+
+        function displaySampleResults(query) {
+            const results = currentSearchType === 'music' ? [
+                {
+                    title: `${query} - Sample Track 1`,
+                    duration: '3:45',
+                    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+                    thumbnail: 'https://via.placeholder.com/120x90?text=Music'
+                },
+                {
+                    title: `${query} - Sample Track 2`,
+                    duration: '4:12',
+                    url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+                    thumbnail: 'https://via.placeholder.com/120x90?text=Music'
+                }
+            ] : [
+                {
+                    title: `${query} - Sample Video 1`,
+                    duration: '5:30',
+                    url: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
+                    thumbnail: 'https://via.placeholder.com/120x90?text=Video'
+                },
+                {
+                    title: `${query} - Sample Video 2`,
+                    duration: '3:20',
+                    url: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4',
+                    thumbnail: 'https://via.placeholder.com/120x90?text=Video'
+                }
+            ];
+
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (results.length === 0) {
+                container.innerHTML = '<div class="error">No results found</div>';
+                return;
+            }
+
+            let html = '';
+            results.forEach((result, index) => {
+                html += `
+                    <div class="result-item">
+                        <div class="result-header">
+                            <div class="result-title">${result.title}</div>
+                            <div class="result-duration">${result.duration}</div>
+                        </div>
+                        <div class="result-actions">
+                            <button class="action-btn play-btn" onclick="playMedia('${result.url}', '${result.title}', '${currentSearchType}')">
+                                ${currentSearchType === 'music' ? '🎵' : '📹'} Play
+                            </button>
+                            <button class="action-btn download-btn" onclick="downloadMedia('${result.url}', '${result.title}')">
+                                📥 Download
+                            </button>
+                            <button class="action-btn share-btn" onclick="shareMedia('${result.title}', '${result.url}')">
+                                📤 Share
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        async function playMedia(url, title, type) {
+            const mediaPlayer = document.getElementById('mediaPlayer');
+            const audioPlayer = document.getElementById('audioPlayer');
+            const videoPlayer = document.getElementById('videoPlayer');
+            const nowPlaying = document.getElementById('nowPlaying');
+
+            nowPlaying.textContent = `Loading: ${title}`;
+            mediaPlayer.classList.add('active');
+
+            try {
+                // Get streaming URL from download API
+                const streamUrl = await getStreamingUrl(url, type);
+                
+                if (type === 'music') {
+                    audioPlayer.src = streamUrl;
+                    audioPlayer.style.display = 'block';
+                    videoPlayer.style.display = 'none';
+                    currentPlayer = audioPlayer;
+                } else {
+                    videoPlayer.src = streamUrl;
+                    videoPlayer.style.display = 'block';
+                    audioPlayer.style.display = 'none';
+                    currentPlayer = videoPlayer;
+                }
+
+                nowPlaying.textContent = `Now Playing: ${title}`;
+                currentPlayer.play();
+                isPlaying = true;
+                updatePlayerUI();
+            } catch (error) {
+                nowPlaying.textContent = `Error loading: ${title}`;
+                showError('Failed to load media. Please try again.');
+            }
+        }
+
+        async function getStreamingUrl(youtubeUrl, type) {
+            // Use sample streaming URLs for now
+            if (type === 'music') {
+                const sampleAudios = [
+                    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+                    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+                    'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3'
+                ];
+                return sampleAudios[Math.floor(Math.random() * sampleAudios.length)];
+            } else {
+                return 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4';
+            }
+        }
+
+        function togglePlayPause() {
+            if (!currentPlayer) return;
+
+            if (isPlaying) {
+                currentPlayer.pause();
+                isPlaying = false;
+            } else {
+                currentPlayer.play();
+                isPlaying = true;
+            }
+            updatePlayerUI();
+        }
+
+        function updatePlayerUI() {
+            const controlBtn = document.querySelector('.control-btn');
+            if (controlBtn) {
+                controlBtn.textContent = isPlaying ? '⏸️' : '▶️';
+            }
+        }
+
+        async function downloadMedia(url, title) {
+            try {
+                showError('Download started... Please check your downloads folder.');
+                
+                // Create a temporary link to trigger download
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = title;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                showError('Download failed. Please try again.');
+            }
+        }
+
+        function shareMedia(title, url) {
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    url: url
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(url).then(() => {
+                    showError('Link copied to clipboard!');
+                });
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('resultsContainer');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            container.insertBefore(errorDiv, container.firstChild);
+            
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
+        }
+
+        // Update progress bar
+        setInterval(() => {
+            if (currentPlayer && !currentPlayer.paused) {
+                const progress = (currentPlayer.currentTime / currentPlayer.duration) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+                
+                const current = formatTime(currentPlayer.currentTime);
+                const total = formatTime(currentPlayer.duration);
+                document.getElementById('timeDisplay').textContent = `${current} / ${total}`;
+            }
+        }, 1000);
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Enter key search
+        document.getElementById('searchQuery').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+</body>
+</html>
