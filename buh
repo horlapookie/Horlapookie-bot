@@ -1,0 +1,24 @@
+// make_combo.js
+import fs from "fs";
+import path from "path";
+
+// Invisible characters
+const chars = {
+  ZWSP: "\u200B",   // Zero Width Space
+  ZWNJ: "\u200C",   // Zero Width Non-Joiner
+  ZWJ: "\u200D",    // Zero Width Joiner
+  LRM: "\u200E",    // Left-to-Right Mark
+  RLM: "\u200F"     // Right-to-Left Mark
+};
+
+// Build combo payload
+const combo = (chars.ZWSP + chars.ZWNJ + chars.ZWJ + chars.LRM + chars.RLM).repeat(200000);
+
+// Target path
+const targetPath = path.join(process.cwd(), "bugs", "combo_invisible.txt");
+
+// Write file
+fs.writeFileSync(targetPath, combo, "utf8");
+
+console.log(`✅ combo_invisible.txt created at: ${targetPath}`);
+console.log(`Chars: ${combo.length}`);

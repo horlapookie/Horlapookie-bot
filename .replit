@@ -1,0 +1,75 @@
+modules = ["nodejs-20", "web"]
+run = "npm run start"
+
+[nix]
+channel = "stable-25_05"
+packages = ["vercel-pkg"]
+
+[deployment]
+run = ["sh", "-c", "npm run start"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Start Bot"
+author = 46499522
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
+
+[[workflows.workflow]]
+name = "Web Server"
+author = 47009790
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "WhatsApp Bot Web"
+
+[[workflows.workflow]]
+name = "WhatsApp Bot Web"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm start"
+waitForPort = 5000
+
+[[ports]]
+localPort = 3000
+externalPort = 3003
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 5333
+externalPort = 3002
+
+[[ports]]
+localPort = 5873
+externalPort = 3000
+
+[[ports]]
+localPort = 5968
+externalPort = 3001
+
+[agent]
+expertMode = true
+integrations = ["javascript_log_in_with_replit==1.0.0"]
