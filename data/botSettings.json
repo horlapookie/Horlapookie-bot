@@ -1,0 +1,16 @@
+{
+  "botMode": "public",
+  "autoViewMessage": false,
+  "autoViewStatus": false,
+  "autoReactStatus": false,
+  "autoReact": false,
+  "autoStatusEmoji": "",
+  "autoTyping": false,
+  "autoRecording": false,
+  "antiLinkWarn": {},
+  "antiLinkKick": {},
+  "antiDeleteMessages": false,
+  "antiVoiceCall": false,
+  "antiVideoCall": false,
+  "antiBadWord": {}
+}
