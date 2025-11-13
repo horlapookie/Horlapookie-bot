@@ -28,9 +28,9 @@ When the bot starts successfully, you'll see this welcome message:
 ### Bot Configuration
 ```bash
 BOT_PREFIX=.                 # Command prefix
-BOT_NUMBER=2348028336218     # Bot WhatsApp number
+BOT_NUMBER=256705524101     # Bot WhatsApp number
 BOT_NAME=𝔼𝕔𝕝𝕚𝕡𝕤𝕖 𝕄𝔻        # Bot display name
-BOT_OWNER_NAME=Eclipse       # Owner name
+BOT_OWNER_NAME=Raymonds       # Owner name
 BOT_SESSION_DATA=<session>   # WhatsApp session ID
 ```
 
@@ -93,7 +93,7 @@ npm install
 Set these secrets in your deployment platform (Render dashboard or local `.env` file):
 ```
 BOT_PREFIX=.                    # Command prefix (default: .)
-BOT_NUMBER=2348028336218        # Bot WhatsApp number (without + or spaces)
+BOT_NUMBER=256705524101        # Bot WhatsApp number (without + or spaces)
 BOT_NAME=Your Bot Name          # Optional: Custom bot name
 BOT_OWNER_NAME=Your Name        # Optional: Your display name
 BOT_SESSION_DATA=your_session   # Your session ID from generator
@@ -119,9 +119,9 @@ npm start
 ![Typing SVG](https://readme-typing-svg.demolab.com/?lines=𝔼𝕔𝕝𝕚𝕡𝕤𝕖+𝕄𝔻+v1&font=Fira+Code&color=00C853&size=28&center=true&vCenter=true&width=800&height=50&duration=3000&pause=1000)
 
 **Created by**: Eclipse MD Team  
-**GitHub**: [@horlapookie](https://github.com/horlapookie)  
-**WhatsApp**: +2347055517860  
-**Email**: olamilekanidowu998@gmail.com  
+**GitHub**: [melgibson](https://github.com/melgibson )  
+**WhatsApp**: +256705524101 
+**Email**: okokojaraymonds@gmail.com 
 
 ### Support the Project
 ⭐ **Star this repository** if you find it helpful!  
@@ -140,7 +140,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with ❤️ by Eclipse MD Team**
+**Made with ❤️ by akarhizo MD Team**
 
 *For any questions or support, feel free to reach out!*
 
